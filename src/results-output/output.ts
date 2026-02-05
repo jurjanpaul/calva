@@ -1,4 +1,5 @@
 import * as outputWindow from '../repl-window/repl-window-doc';
+import { OnAppendDoneCallback } from '../repl-window/repl-window-doc';
 import * as config from '../config';
 import * as vscode from 'vscode';
 import * as util from '../utilities';
@@ -51,7 +52,7 @@ export type OutputCategory =
 type AppendOptions = {
   destination: OutputDestination;
   outputCategory: OutputCategory;
-  after?: AfterAppendCallback;
+  after?: OnAppendDoneCallback;
 };
 
 type AppendClojureOptions = {
@@ -82,10 +83,6 @@ function themedChalk() {
   return vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Light
     ? lightTheme
     : darkTheme;
-}
-
-export interface AfterAppendCallback {
-  (insertLocation: vscode.Location, newPosition?: vscode.Location): any;
 }
 
 export type OutputDestination = 'repl-window' | 'output-channel' | 'terminal' | 'output-view';
@@ -250,7 +247,7 @@ function nsInfoLine(destination: OutputDestination, options: AppendClojureOption
 function appendClojure(
   options: AppendOptions & AppendClojureOptions,
   message: string,
-  after?: AfterAppendCallback
+  after?: OnAppendDoneCallback
 ) {
   const destination = options.destination;
   const didLastTerminateLine = didLastOutputTerminateLine[destination];
@@ -304,7 +301,7 @@ function appendClojure(
 export function appendClojureEval(
   code: string,
   options: AppendClojureOptions,
-  after?: AfterAppendCallback
+  after?: OnAppendDoneCallback
 ) {
   const destination = getDestinationConfiguration().evalResults;
   appendClojure({ destination, outputCategory: 'evalResults', ...options }, code, after);
@@ -317,12 +314,12 @@ export function appendClojureEval(
  * @param code The code to append
  * @param after Optional callback to run after the append
  */
-export function appendClojureOther(message: string, after?: AfterAppendCallback) {
+export function appendClojureOther(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().otherOutput;
   appendClojure({ destination, outputCategory: 'clojure' }, message, after);
 }
 
-function append(options: AppendOptions, message: string, after?: AfterAppendCallback) {
+function append(options: AppendOptions, message: string, after?: OnAppendDoneCallback) {
   try {
     emit({
       category: options.outputCategory,
@@ -367,7 +364,7 @@ function append(options: AppendOptions, message: string, after?: AfterAppendCall
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendEvalOut(message: string, after?: AfterAppendCallback) {
+export function appendEvalOut(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().evalOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -385,7 +382,7 @@ export function appendEvalOut(message: string, after?: AfterAppendCallback) {
 export function appendEvalErr(
   message: string,
   options: AppendClojureOptions,
-  after?: AfterAppendCallback
+  after?: OnAppendDoneCallback
 ) {
   const destination = getDestinationConfiguration().evalOutput;
   const coloredMessage =
@@ -405,7 +402,7 @@ export function appendEvalErr(
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendOtherOut(message: string, after?: AfterAppendCallback) {
+export function appendOtherOut(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().otherOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -421,7 +418,7 @@ export function appendOtherOut(message: string, after?: AfterAppendCallback) {
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendOtherErr(message: string, after?: AfterAppendCallback) {
+export function appendOtherErr(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().otherOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -430,7 +427,7 @@ export function appendOtherErr(message: string, after?: AfterAppendCallback) {
   append({ destination, outputCategory: 'otherErr' }, coloredMessage, after);
 }
 
-function appendLine(options: AppendOptions, message: string, after?: AfterAppendCallback) {
+function appendLine(options: AppendOptions, message: string, after?: OnAppendDoneCallback) {
   const destination = options.destination;
   const didLastTerminateLine = didLastOutputTerminateLine[destination];
   didLastOutputTerminateLine[destination] = true;
@@ -461,7 +458,7 @@ function appendLine(options: AppendOptions, message: string, after?: AfterAppend
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendLineEvalOut(message: string, after?: AfterAppendCallback) {
+export function appendLineEvalOut(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().evalOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -477,7 +474,7 @@ export function appendLineEvalOut(message: string, after?: AfterAppendCallback) 
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendLineEvalErr(message: string, after?: AfterAppendCallback) {
+export function appendLineEvalErr(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().evalOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -493,7 +490,7 @@ export function appendLineEvalErr(message: string, after?: AfterAppendCallback) 
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendLineOtherOut(message: string, after?: AfterAppendCallback) {
+export function appendLineOtherOut(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().otherOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -509,7 +506,7 @@ export function appendLineOtherOut(message: string, after?: AfterAppendCallback)
  * @param message The message to append
  * @param after Optional callback to run after the append
  */
-export function appendLineOtherErr(message: string, after?: AfterAppendCallback) {
+export function appendLineOtherErr(message: string, after?: OnAppendDoneCallback) {
   const destination = getDestinationConfiguration().otherOutput;
   const coloredMessage =
     destinationSupportsAnsi(destination) && !messageContainsAnsi(message)
@@ -521,21 +518,21 @@ export function appendLineOtherErr(message: string, after?: AfterAppendCallback)
 /**
  * Appends a prompt to the repl window.
  * Needs to be called via here, because we keep track of wether the last output ended with a newline or not.
- * @param onAppended Optional callback to run after the append
+ * @param onAppendDone Optional callback to run after the append
  */
-export function replWindowAppendPrompt(onAppended?: outputWindow.OnAppendedCallback) {
+export function replWindowAppendPrompt(onAppendDone?: OnAppendDoneCallback) {
   didLastOutputTerminateLine['repl-window'] = true;
-  outputWindow.appendPrompt(onAppended);
+  outputWindow.appendPrompt(onAppendDone);
 }
 
 /**
  * Forces a prompt to be appended to the repl window, bypassing the duplicate check.
  * Needs to be called via here, because we keep track of wether the last output ended with a newline or not.
- * @param onAppended Optional callback to run after the append
+ * @param onAppendDone Optional callback to run after the append
  */
-export function replWindowForceAppendPrompt(onAppended?: outputWindow.OnAppendedCallback) {
+export function replWindowForceAppendPrompt(onAppendDone?: OnAppendDoneCallback) {
   didLastOutputTerminateLine['repl-window'] = true;
-  outputWindow.forceAppendPrompt(onAppended);
+  outputWindow.forceAppendPrompt(onAppendDone);
 }
 
 function formatStacktrace(stacktrace: any[]) {

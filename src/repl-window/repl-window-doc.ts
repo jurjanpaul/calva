@@ -468,7 +468,7 @@ function registerReplWindowDocSubscriptions() {
   state.extensionContext.subscriptions.push(subOpen);
 }
 
-async function writeToReplWindowDoc({ text, onAppended }: ResultsBufferEntry): Promise<void> {
+async function writeToReplWindowDoc({ text, onAppendDone }: ResultsBufferEntry): Promise<void> {
   const docUri = getDocUri();
   const doc = await vscode.workspace.openTextDocument(docUri);
   const insertPosition = doc.positionAt(Infinity);
@@ -478,7 +478,7 @@ async function writeToReplWindowDoc({ text, onAppended }: ResultsBufferEntry): P
   if (!((await vscode.workspace.applyEdit(edit)) && (await doc.save()))) {
     return;
   }
-  onAppended?.(
+  onAppendDone?.(
     new vscode.Location(docUri, insertPosition),
     new vscode.Location(docUri, doc.positionAt(Infinity))
   );
@@ -493,10 +493,10 @@ export type ResultsBuffer = ResultsBufferEntry[];
 
 export type ResultsBufferEntry = {
   text: string;
-  onAppended?: OnAppendedCallback;
+  onAppendDone?: OnAppendDoneCallback;
 };
 
-export interface OnAppendedCallback {
+export interface OnAppendDoneCallback {
   (insertLocation: vscode.Location, newPosition?: vscode.Location): any;
 }
 
@@ -506,12 +506,12 @@ async function writeNextOutputBatch() {
   if (!resultsBuffer[0]) {
     return;
   }
-  // Any entries that contain onAppended are not batched with other pending
+  // Any entries that contain onAppendDone are not batched with other pending
   // entries to simplify providing the correct insert position to the callback.
-  if (resultsBuffer[0].onAppended) {
+  if (resultsBuffer[0].onAppendDone) {
     return await writeToReplWindowDoc(resultsBuffer.shift());
   }
-  // Batch all remaining entries up until another onAppended callback.
+  // Batch all remaining entries up until another onAppendDone callback.
   const [nextText, remaining] = splitEditQueueForTextBatching(resultsBuffer);
   resultsBuffer = remaining;
   await writeToReplWindowDoc({ text: nextText.join('') });
@@ -537,15 +537,15 @@ async function flushOutput() {
 
 let lastAppended = '';
 
-/* If something must be done after a particular edit, use the onAppended callback. */
-export function append(text: string, onAppended?: OnAppendedCallback): void {
+/* If something must be done after a particular edit, use the onAppendDone callback. */
+export function append(text: string, onAppendDone?: OnAppendDoneCallback): void {
   lastAppended = text;
-  resultsBuffer.push({ text, onAppended });
+  resultsBuffer.push({ text, onAppendDone });
   void flushOutput();
 }
 
-export function appendLine(text = '', onAppended?: OnAppendedCallback): void {
-  append(`${text}\n`, onAppended);
+export function appendLine(text = '', onAppendDone?: OnAppendDoneCallback): void {
+  append(`${text}\n`, onAppendDone);
 }
 
 export function discardPendingPrints(): void {
@@ -608,18 +608,17 @@ export function printLastStacktrace(): void {
   });
 }
 
-export function appendPrompt(onAppended?: OnAppendedCallback) {
+export function appendPrompt(onAppendDone?: OnAppendDoneCallback) {
   const prompt = getPrompt();
   if (!lastAppended.trimEnd().endsWith(prompt.trimEnd())) {
-    appendLine(getPrompt(), onAppended);
-  } else if (onAppended) {
-    // Resolve promise though no append is actually needed
-    onAppended(undefined);
+    appendLine(getPrompt(), onAppendDone);
+  } else if (onAppendDone) {
+    onAppendDone(undefined);
   }
 }
 
-export function forceAppendPrompt(onAppended?: OnAppendedCallback) {
-  appendLine(getPrompt(), onAppended);
+export function forceAppendPrompt(onAppendDone?: OnAppendDoneCallback) {
+  appendLine(getPrompt(), onAppendDone);
 }
 
 function getUriForCurrentNamespace(): Promise<vscode.Uri> {

@@ -54,7 +54,7 @@ describe('splitEditQueueForTextBatching', () => {
     const queue: ResultsBuffer = [
       {
         text: 'item-with-callback',
-        onAppended: () => {
+        onAppendDone: () => {
           // do nothing
         },
       },
@@ -73,7 +73,7 @@ describe('splitEditQueueForTextBatching', () => {
       { text: 'item2' },
       {
         text: 'item3-with-callback',
-        onAppended: () => {
+        onAppendDone: () => {
           // do nothing
         },
       },

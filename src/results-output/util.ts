@@ -22,7 +22,7 @@ function splitEditQueueForTextBatching(
   maxBatchSize: number = 1000
 ): [string[], ResultsBuffer] {
   const nextBatch = takeWhile(editQueue, (value, index) => {
-    return index < maxBatchSize && !value.onAppended;
+    return index < maxBatchSize && !value.onAppendDone;
   }).map((x) => x.text);
   const remainingEditQueue = [...editQueue].slice(nextBatch.length);
   return [nextBatch, remainingEditQueue];
