@@ -36,7 +36,7 @@ async function focusReplWindow(): Promise<vscode.TextEditor> {
 async function appendPromptForSession(sessionKey: string, editor: vscode.TextEditor) {
   setSessionKey(sessionKey);
   const beforeLength = editor.document.getText().length;
-  outputWindow.appendPrompt();
+  void outputWindow.appendPrompt();
   await testUtil.waitForCondition(() => editor.document.getText().length > beforeLength);
 }
 

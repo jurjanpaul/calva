@@ -521,11 +521,10 @@ export function appendLineOtherErr(message: string, after?: AfterAppendCallback)
 /**
  * Appends a prompt to the repl window.
  * Needs to be called via here, because we keep track of wether the last output ended with a newline or not.
- * @param onAppended Optional callback to run after the append
  */
-export function replWindowAppendPrompt(onAppended?: outputWindow.OnAppendedCallback) {
+export async function replWindowAppendPrompt() {
   didLastOutputTerminateLine['repl-window'] = true;
-  outputWindow.appendPrompt(onAppended);
+  await outputWindow.appendPrompt();
 }
 
 /**
@@ -558,7 +557,7 @@ function printStackTrace(stacktrace: any[]) {
   switch (evalResultsOutputDestination) {
     case 'repl-window':
       outputWindow.printLastStacktrace();
-      replWindowAppendPrompt();
+      void replWindowAppendPrompt();
       break;
     case 'output-view':
       appendStackTraceToReplOutputWebview(stacktrace);
