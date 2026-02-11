@@ -74,12 +74,12 @@ suite('REPL Window Targeting suite', function () {
     }
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Reset REPL window to clj session before each test
-    await replSessionsMenu.setReplWindowSession('clj');
+    replSessionsMenu.setReplWindowSession('clj');
   });
 
-  test('Initial REPL window targets the secondary (CLJS) session after connection', async function () {
+  test('Initial REPL window targets the secondary (CLJS) session after connection', function () {
     testUtil.log(suiteName, 'Testing: Initial REPL window targets CLJS after full connection');
 
     // After a full CLJ+CLJS connection, the REPL window should target the secondary session
@@ -87,7 +87,7 @@ suite('REPL Window Targeting suite', function () {
     // Note: beforeEach resets to clj, so we need to check what happens after a fresh connection
 
     // For this test, we verify the mechanism works - we can set and get the session
-    await replSessionsMenu.setReplWindowSession('cljs');
+    replSessionsMenu.setReplWindowSession('cljs');
     const currentSession = outputWindow.getSessionType();
     assert.strictEqual(currentSession, 'cljs', 'REPL window should be targeting cljs');
   });
@@ -96,7 +96,7 @@ suite('REPL Window Targeting suite', function () {
     testUtil.log(suiteName, 'Testing: Change REPL window session via command');
 
     // Start with clj
-    await replSessionsMenu.setReplWindowSession('clj');
+    replSessionsMenu.setReplWindowSession('clj');
     assert.strictEqual(outputWindow.getSessionType(), 'clj', 'Initial session should be clj');
 
     // Change to cljs via command
@@ -124,7 +124,7 @@ suite('REPL Window Targeting suite', function () {
     testUtil.log(suiteName, 'Testing: Routing uses REPL window session when active');
 
     // Set REPL window to target cljs
-    await replSessionsMenu.setReplWindowSession('cljs');
+    replSessionsMenu.setReplWindowSession('cljs');
 
     // Open and focus the REPL window
     await outputWindow.revealReplWindowDoc(false);
@@ -153,7 +153,7 @@ suite('REPL Window Targeting suite', function () {
     clientRegistry.setCljcTargetForConnection(clientKey, 'primary');
 
     // Set REPL window to target cljs (opposite of cljc target)
-    await replSessionsMenu.setReplWindowSession('cljs');
+    replSessionsMenu.setReplWindowSession('cljs');
 
     // Open and focus the REPL window
     await outputWindow.revealReplWindowDoc(false);
@@ -206,10 +206,10 @@ suite('REPL Window Targeting suite', function () {
     );
   });
 
-  test('setReplWindowSession returns false for non-existent session', async function () {
+  test('setReplWindowSession returns false for non-existent session', function () {
     testUtil.log(suiteName, 'Testing: setReplWindowSession rejects invalid session');
 
-    const result = await replSessionsMenu.setReplWindowSession('non-existent-session');
+    const result = replSessionsMenu.setReplWindowSession('non-existent-session');
 
     assert.strictEqual(result, false, 'Should return false for non-existent session');
     // Session should remain unchanged
@@ -219,10 +219,10 @@ suite('REPL Window Targeting suite', function () {
     );
   });
 
-  test('setReplWindowSession returns true for valid session', async function () {
+  test('setReplWindowSession returns true for valid session', function () {
     testUtil.log(suiteName, 'Testing: setReplWindowSession accepts valid session');
 
-    const result = await replSessionsMenu.setReplWindowSession('cljs');
+    const result = replSessionsMenu.setReplWindowSession('cljs');
 
     assert.strictEqual(result, true, 'Should return true for valid session');
     assert.strictEqual(outputWindow.getSessionType(), 'cljs', 'Session should be updated');
