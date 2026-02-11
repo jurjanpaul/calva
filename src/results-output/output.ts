@@ -532,9 +532,11 @@ export async function replWindowAppendPrompt() {
  * Needs to be called via here, because we keep track of wether the last output ended with a newline or not.
  * @param onAppended Optional callback to run after the append
  */
-export function replWindowForceAppendPrompt(onAppended?: outputWindow.OnAppendedCallback) {
+export async function replWindowForceAppendPrompt(
+  onAppended?: outputWindow.OnAppendedCallback
+): Promise<void> {
   didLastOutputTerminateLine['repl-window'] = true;
-  outputWindow.forceAppendPrompt(onAppended);
+  await outputWindow.forceAppendPrompt(onAppended);
 }
 
 function formatStacktrace(stacktrace: any[]) {

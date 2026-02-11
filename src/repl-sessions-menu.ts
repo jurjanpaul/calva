@@ -375,7 +375,7 @@ async function promptForOutputWindowSession(): Promise<void> {
   }
 
   if (outputSelection.action === 'session' && outputSelection.sessionKey) {
-    setReplWindowSession(outputSelection.sessionKey);
+    await setReplWindowSession(outputSelection.sessionKey);
   }
 }
 
@@ -385,20 +385,20 @@ async function promptForOutputWindowSession(): Promise<void> {
  * @param sessionKey The session key to set for the REPL window
  * @returns true if the session was set successfully, false otherwise
  */
-export function setReplWindowSession(sessionKey: string): boolean {
+export async function setReplWindowSession(sessionKey: string): Promise<boolean> {
   const session = sessionRegistry.getSession(sessionKey);
   if (!session) {
     return false;
   }
   outputWindow.setSession(session, undefined, sessionKey);
-  output.replWindowForceAppendPrompt();
+  await output.replWindowForceAppendPrompt();
   status.update();
   return true;
 }
 
 export async function selectReplWindowSession(sessionKey?: string): Promise<void> {
   if (sessionKey) {
-    const success = setReplWindowSession(sessionKey);
+    const success = await setReplWindowSession(sessionKey);
     if (!success) {
       void vscode.window.showErrorMessage(`Session '${sessionKey}' not found.`);
     }

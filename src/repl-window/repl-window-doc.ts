@@ -619,8 +619,13 @@ export async function appendPrompt() {
   }
 }
 
-export function forceAppendPrompt(onAppended?: OnAppendedCallback) {
-  appendLine(getPrompt(), onAppended);
+export async function forceAppendPrompt(onAppended?: OnAppendedCallback): Promise<void> {
+  return new Promise<void>((resolve) => {
+    appendLine(getPrompt(), (insertLocation, newPosition) => {
+      onAppended?.(insertLocation, newPosition);
+      resolve();
+    });
+  });
 }
 
 function getUriForCurrentNamespace(): Promise<vscode.Uri> {
